@@ -82,16 +82,23 @@ ShipCheck audits web applications before launch or after every CI/CD deployment�
 
 ---
 
-## Plug-and-Play Hosting (Vercel + Neon Postgres)
+## Live Demo
+
+`https://shipcheck-lac.vercel.app` (Vercel production, project `brusnyaks-projects/shipcheck`)
+
+Deployed from `main` via `vercel deploy --prod`. Build works on first push; a `.npmrc` with `legacy-peer-deps=true` was added to resolve an `esbuild`/`vite` peer-dependency conflict on Vercel's fresh `npm install`.
+
+## Hosting (Vercel + Neon Postgres)
 
 Repository: `https://github.com/brusnyak/shipcheck.git`
 
-ShipCheck includes `api/index.ts` and `vercel.json` so **both the React frontend and Express API deploy on Vercel** with zero manual credential copying:
+ShipCheck includes `api/index.ts` and `vercel.json` so **both the React frontend and Express API deploy on Vercel**:
 
 1. Import `brusnyak/shipcheck` into [vercel.com](https://vercel.com) (Framework Preset: **Vite**).
 2. Under **Storage → Marketplace → Neon**, attach a free **Neon Postgres** database (`DATABASE_URL` is injected automatically).
 3. Deploy! Vercel runs `prisma generate`, pushes the Prisma schema automatically when `DATABASE_URL` is present, and builds the bundle.
-4. *(Optional for live viewport screenshots on serverless)* Add `BROWSER_WS_ENDPOINT` (e.g., Browserless) in Vercel Environment Variables, or run `Dockerfile.backend` on Koyeb / Render for built-in Chromium.
+4. *(Pending)* Add the Vercel deployment domain to **Firebase Authentication → Authorized domains** for Google Sign-In.
+5. *(Optional for live viewport screenshots on serverless)* Add `BROWSER_WS_ENDPOINT` (e.g., Browserless) in Vercel Environment Variables, or run `Dockerfile.backend` on Koyeb / Render for built-in Chromium.
 
 ---
 
