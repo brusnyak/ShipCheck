@@ -1,0 +1,262 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'createdAt', 'updatedAt'])
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && isValidId(data.uid)
+        && data.email is string
+        && data.email.size() >= 3
+        && data.email.size() <= 256
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 120
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['ownerId', 'name', 'targetUrl', 'webhookToken', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'name', 'targetUrl', 'webhookToken', 'createdAt', 'updatedAt'])
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid
+        && isValidId(data.ownerId)
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 100
+        && data.targetUrl is string
+        && data.targetUrl.size() >= 8
+        && data.targetUrl.size() <= 512
+        && data.targetUrl.matches('^https?://.+')
+        && data.webhookToken is string
+        && data.webhookToken.size() >= 16
+        && data.webhookToken.size() <= 128
+        && data.webhookToken.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidScanSummary(summary) {
+      return summary is map
+        && summary.keys().hasAll(['criticalCount', 'warningCount', 'infoCount', 'passedChecks'])
+        && summary.keys().hasOnly(['criticalCount', 'warningCount', 'infoCount', 'passedChecks'])
+        && summary.criticalCount is number
+        && summary.criticalCount >= 0
+        && summary.criticalCount <= 1000
+        && summary.warningCount is number
+        && summary.warningCount >= 0
+        && summary.warningCount <= 1000
+        && summary.infoCount is number
+        && summary.infoCount >= 0
+        && summary.infoCount <= 1000
+        && summary.passedChecks is list
+        && summary.passedChecks.size() <= 50
+        && (summary.passedChecks.size() == 0 || summary.passedChecks[0] is string);
+    }
+
+    function isValidScanReport(data) {
+      return data.keys().hasAll([
+          'shareSlug', 'ownerId', 'projectId', 'isPublic', 'targetUrl',
+          'status', 'triggerType', 'scanMode', 'score', 'grade',
+          'summary', 'pagesScanned', 'durationMs', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'shareSlug', 'ownerId', 'projectId', 'isPublic', 'targetUrl',
+          'status', 'triggerType', 'scanMode', 'score', 'grade',
+          'summary', 'pagesScanned', 'durationMs', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.shareSlug)
+        && data.shareSlug.size() >= 4
+        && data.shareSlug.size() <= 64
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid
+        && isValidId(data.ownerId)
+        && data.projectId is string
+        && data.projectId.size() <= 128
+        && data.isPublic is bool
+        && data.targetUrl is string
+        && data.targetUrl.size() >= 8
+        && data.targetUrl.size() <= 512
+        && data.targetUrl.matches('^https?://.+')
+        && data.status in ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED']
+        && data.triggerType in ['MANUAL', 'WEBHOOK']
+        && data.scanMode in ['PLAYWRIGHT', 'HTTP_CHEERIO']
+        && data.score is number
+        && data.score >= 0
+        && data.score <= 100
+        && data.grade in ['A', 'B', 'C', 'D', 'F']
+        && isValidScanSummary(data.summary)
+        && data.pagesScanned is number
+        && data.pagesScanned >= 0
+        && data.pagesScanned <= 100
+        && data.durationMs is number
+        && data.durationMs >= 0
+        && data.durationMs <= 3600000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidScanIssue(data) {
+      return data.keys().hasAll([
+          'ownerId', 'isPublic', 'category', 'severity', 'title', 'description',
+          'remediation', 'pageUrl', 'evidence', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'isPublic', 'category', 'severity', 'title', 'description',
+          'remediation', 'pageUrl', 'evidence', 'createdAt'
+        ])
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid
+        && isValidId(data.ownerId)
+        && data.isPublic is bool
+        && data.category in ['CONSOLE', 'NETWORK', 'MOBILE', 'BROKEN_ASSET', 'SEO', 'SECURITY']
+        && data.severity in ['CRITICAL', 'WARNING', 'INFO']
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 200
+        && data.description is string
+        && data.description.size() >= 1
+        && data.description.size() <= 1000
+        && data.remediation is string
+        && data.remediation.size() >= 1
+        && data.remediation.size() <= 1000
+        && data.pageUrl is string
+        && data.pageUrl.size() >= 1
+        && data.pageUrl.size() <= 512
+        && data.evidence is map
+        && data.evidence.keys().size() <= 50
+        && data.createdAt is timestamp;
+    }
+
+    // Users Collection (PII isolated to owner only)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Projects Collection
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(projectId)
+        && isSignedIn()
+        && isValidProject(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(projectId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidProject(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'targetUrl', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['webhookToken', 'updatedAt'])
+        );
+      allow delete: if isValidId(projectId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    // ScanReports Collection
+    match /scanReports/{reportId} {
+      allow get: if isValidId(reportId)
+        && (existing().isPublic == true || (isSignedIn() && existing().ownerId == request.auth.uid));
+      allow list: if resource.data.isPublic == true
+        || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if isValidId(reportId)
+        && isSignedIn()
+        && isValidScanReport(incoming())
+        && (
+          incoming().projectId == ''
+          || (
+            isValidId(incoming().projectId)
+            && exists(/databases/$(database)/documents/projects/$(incoming().projectId))
+            && get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.ownerId == request.auth.uid
+          )
+        )
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(reportId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && !(existing().status in ['COMPLETED', 'FAILED'])
+        && isValidScanReport(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().shareSlug == existing().shareSlug
+        && incoming().projectId == existing().projectId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'status', 'scanMode', 'score', 'grade', 'summary', 'pagesScanned', 'durationMs', 'updatedAt'
+        ]);
+      allow delete: if isValidId(reportId) && isSignedIn() && existing().ownerId == request.auth.uid;
+
+      // ScanIssues Subcollection (Master Gate checks parent report owner)
+      match /issues/{issueId} {
+        allow get: if isValidId(reportId)
+          && isValidId(issueId)
+          && (
+            get(/databases/$(database)/documents/scanReports/$(reportId)).data.isPublic == true
+            || (isSignedIn() && get(/databases/$(database)/documents/scanReports/$(reportId)).data.ownerId == request.auth.uid)
+          );
+        allow list: if resource.data.isPublic == true
+          || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+        allow create: if isValidId(reportId)
+          && isValidId(issueId)
+          && isSignedIn()
+          && isValidScanIssue(incoming())
+          && exists(/databases/$(database)/documents/scanReports/$(reportId))
+          && get(/databases/$(database)/documents/scanReports/$(reportId)).data.ownerId == request.auth.uid
+          && incoming().isPublic == get(/databases/$(database)/documents/scanReports/$(reportId)).data.isPublic
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(reportId)
+          && isValidId(issueId)
+          && isSignedIn()
+          && get(/databases/$(database)/documents/scanReports/$(reportId)).data.ownerId == request.auth.uid;
+      }
+    }
+  }
+}

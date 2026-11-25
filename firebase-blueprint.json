@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile storing account metadata.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "displayName", "createdAt", "updatedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "A tracked web application project with a unique deploy webhook token.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "targetUrl": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 512,
+          "pattern": "^https?://.+"
+        },
+        "webhookToken": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "name", "targetUrl", "webhookToken", "createdAt", "updatedAt"]
+    },
+    "ScanReport": {
+      "title": "ScanReport",
+      "description": "A pre-launch QA scan run and shareable launch readiness scorecard.",
+      "type": "object",
+      "properties": {
+        "shareSlug": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "projectId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "targetUrl": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 512,
+          "pattern": "^https?://.+"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["QUEUED", "RUNNING", "COMPLETED", "FAILED"]
+        },
+        "triggerType": {
+          "type": "string",
+          "enum": ["MANUAL", "WEBHOOK"]
+        },
+        "scanMode": {
+          "type": "string",
+          "enum": ["PLAYWRIGHT", "HTTP_CHEERIO"]
+        },
+        "score": {
+          "type": "number"
+        },
+        "grade": {
+          "type": "string",
+          "enum": ["A", "B", "C", "D", "F"]
+        },
+        "summary": {
+          "type": "object"
+        },
+        "pagesScanned": {
+          "type": "number"
+        },
+        "durationMs": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "shareSlug",
+        "ownerId",
+        "projectId",
+        "isPublic",
+        "targetUrl",
+        "status",
+        "triggerType",
+        "scanMode",
+        "score",
+        "grade",
+        "summary",
+        "pagesScanned",
+        "durationMs",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ScanIssue": {
+      "title": "ScanIssue",
+      "description": "An individual diagnostic finding captured during a scan run.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["CONSOLE", "NETWORK", "MOBILE", "BROKEN_ASSET", "SEO", "SECURITY"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "WARNING", "INFO"]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "pageUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "evidence": {
+          "type": "object"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "isPublic",
+        "category",
+        "severity",
+        "title",
+        "description",
+        "remediation",
+        "pageUrl",
+        "evidence",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile documents keyed by Firebase Auth UID."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "User-owned projects configured with target URLs and deploy webhook tokens."
+    },
+    "/scanReports/{reportId}": {
+      "schema": { "$ref": "#/entities/ScanReport" },
+      "description": "Persisted scan scorecards keyed by report ID / shareSlug."
+    },
+    "/scanReports/{reportId}/issues/{issueId}": {
+      "schema": { "$ref": "#/entities/ScanIssue" },
+      "description": "Diagnostic issues belonging to a specific scan report."
+    }
+  }
+}

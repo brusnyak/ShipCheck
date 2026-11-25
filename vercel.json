@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npx prisma generate --schema=backend/prisma/schema.prisma && (if [ -n \"$DATABASE_URL\" ]; then npx prisma db push --schema=backend/prisma/schema.prisma --accept-data-loss; fi) && npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/((?!api/|assets/|SKILL\\.md).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

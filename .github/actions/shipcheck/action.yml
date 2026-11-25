@@ -1,0 +1,198 @@
+name: 'ShipCheck Pre-Launch QA Gate'
+description: 'Audit any staging or Vercel preview URL for runtime console errors, 4xx/5xx APIs, broken assets, mobile overflow, SEO, and security headers.'
+author: 'Lingonberry / ShipCheck'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  target_url:
+    description: 'Public preview or staging URL to audit (e.g. from Vercel Preview Deploy)'
+    required: true
+  shipcheck_url:
+    description: 'Hosted ShipCheck base URL (e.g. https://shipcheck.vercel.app)'
+    required: true
+  webhook_token:
+    description: 'Optional ShipCheck project webhook token (sc_wh_...) to record scan history under a project'
+    required: false
+    default: ''
+  min_score:
+    description: 'Minimum Launch Readiness Score (0-100) required to pass'
+    required: false
+    default: '80'
+  fail_on_critical:
+    description: 'Fail the action if any CRITICAL issue is detected (true/false)'
+    required: false
+    default: 'true'
+  github_token:
+    description: 'GitHub token for posting or updating PR scorecard comments'
+    required: false
+    default: '${{ github.token }}'
+
+outputs:
+  score:
+    description: 'Launch Readiness Score (0-100)'
+    value: ${{ steps.audit.outputs.score }}
+  grade:
+    description: 'Launch Grade (A-F)'
+    value: ${{ steps.audit.outputs.grade }}
+  report_url:
+    description: 'Shareable ShipCheck scorecard URL'
+    value: ${{ steps.audit.outputs.report_url }}
+  critical_count:
+    description: 'Number of critical issues detected'
+    value: ${{ steps.audit.outputs.critical_count }}
+  scan_mode:
+    description: 'Scanner engine mode (PLAYWRIGHT or HTTP_CHEERIO)'
+    value: ${{ steps.audit.outputs.scan_mode }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run ShipCheck Pre-Launch Audit
+      id: audit
+      shell: bash
+      env:
+        TARGET_URL: ${{ inputs.target_url }}
+        SHIPCHECK_URL: ${{ inputs.shipcheck_url }}
+        WEBHOOK_TOKEN: ${{ inputs.webhook_token }}
+        MIN_SCORE: ${{ inputs.min_score }}
+        FAIL_ON_CRITICAL: ${{ inputs.fail_on_critical }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        node <<'EOF'
+        const fs = require('node:fs');
+
+        async function main() {
+          const base = process.env.SHIPCHECK_URL.replace(/\/+$/, '');
+          const targetUrl = process.env.TARGET_URL.trim();
+          const webhookToken = (process.env.WEBHOOK_TOKEN || '').trim();
+          const minScore = Number(process.env.MIN_SCORE || '80');
+          const failOnCritical = process.env.FAIL_ON_CRITICAL !== 'false';
+
+          const startEndpoint = webhookToken
+            ? `${base}/api/webhooks/deploy/${encodeURIComponent(webhookToken)}`
+            : `${base}/api/scans`;
+
+          const startPayload = webhookToken
+            ? { deployUrl: targetUrl }
+            : { url: targetUrl };
+
+          const startRes = await fetch(startEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(startPayload),
+          });
+          const startBody = await startRes.json().catch(() => ({}));
+          if (!startRes.ok) {
+            throw new Error(`ShipCheck trigger failed (${startRes.status}): ${startBody.error || 'Unknown error'}`);
+          }
+
+          const slug = startBody.shareSlug;
+          let scan = null;
+          for (let attempt = 0; attempt < 45; attempt += 1) {
+            const pollRes = await fetch(`${base}/api/scans/${encodeURIComponent(slug)}`);
+            const pollBody = await pollRes.json().catch(() => ({}));
+            if (!pollRes.ok) {
+              throw new Error(`Failed polling report ${slug}: HTTP ${pollRes.status}`);
+            }
+            scan = pollBody.scan;
+            if (scan.status === 'COMPLETED' || scan.status === 'FAILED') {
+              break;
+            }
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+
+          if (!scan || scan.status !== 'COMPLETED') {
+            throw new Error(scan?.errorMessage || 'ShipCheck audit did not complete in time.');
+          }
+
+          const score = Number(scan.score ?? 0);
+          const grade = String(scan.grade ?? 'F');
+          const summary = scan.summary || { criticalCount: 0, warningCount: 0, infoCount: 0, passedChecks: [] };
+          const criticalCount = Number(summary.criticalCount ?? 0);
+          const warningCount = Number(summary.warningCount ?? 0);
+          const infoCount = Number(summary.infoCount ?? 0);
+          const reportUrl = `${base}/reports/${slug}`;
+          const passed = score >= minScore && (!failOnCritical || criticalCount === 0);
+
+          const outFile = process.env.GITHUB_OUTPUT;
+          if (outFile) {
+            fs.appendFileSync(outFile, `score=${score}\n`);
+            fs.appendFileSync(outFile, `grade=${grade}\n`);
+            fs.appendFileSync(outFile, `report_url=${reportUrl}\n`);
+            fs.appendFileSync(outFile, `critical_count=${criticalCount}\n`);
+            fs.appendFileSync(outFile, `scan_mode=${scan.scanMode}\n`);
+          }
+
+          const issues = (scan.issues || []).slice(0, 8);
+          const issueLines = issues.length
+            ? issues.map((i) => `- **[${i.severity}] (${i.category}) ${i.title}** — ${i.remediation}`).join('\n')
+            : '- Zero issues detected. All audited checks passed.';
+
+          const markdown = [
+            '<!-- shipcheck-pr-comment -->',
+            `## ShipCheck Launch Audit: ${passed ? 'PASS' : 'NEEDS FIXES'} (Grade ${grade} · ${score}/100)`,
+            '',
+            `- **Target:** \`${scan.targetUrl}\``,
+            `- **Engine:** ${scan.scanMode === 'PLAYWRIGHT' ? 'Full Browser Audit' : 'Fast HTTP Audit'} (${scan.pagesScanned} pages, ${scan.durationMs ?? 0}ms)`,
+            `- **Summary:** ${criticalCount} Critical · ${warningCount} Warning · ${infoCount} Info`,
+            `- **Full Scorecard:** ${reportUrl}`,
+            '',
+            '### Top Findings',
+            issueLines,
+          ].join('\n');
+
+          if (process.env.GITHUB_STEP_SUMMARY) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+          }
+
+          // Upsert PR comment if running inside a pull_request event
+          const ghToken = process.env.GITHUB_TOKEN;
+          const repo = process.env.GITHUB_REPOSITORY;
+          const eventPath = process.env.GITHUB_EVENT_PATH;
+          if (ghToken && repo && eventPath && fs.existsSync(eventPath)) {
+            try {
+              const eventData = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+              const prNumber = eventData?.pull_request?.number;
+              if (prNumber) {
+                const headers = {
+                  Authorization: `Bearer ${ghToken}`,
+                  Accept: 'application/vnd.github+json',
+                  'Content-Type': 'application/json',
+                };
+                const commentsUrl = `https://api.github.com/repos/${repo}/issues/${prNumber}/comments`;
+                const existingRes = await fetch(commentsUrl, { headers });
+                const existing = existingRes.ok ? await existingRes.json() : [];
+                const match = Array.isArray(existing)
+                  ? existing.find((c) => typeof c.body === 'string' && c.body.includes('<!-- shipcheck-pr-comment -->'))
+                  : null;
+                if (match) {
+                  await fetch(`https://api.github.com/repos/${repo}/issues/comments/${match.id}`, {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify({ body: markdown }),
+                  });
+                } else {
+                  await fetch(commentsUrl, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ body: markdown }),
+                  });
+                }
+              }
+            } catch (err) {
+              console.warn('Could not post PR comment:', err.message);
+            }
+          }
+
+          if (!passed) {
+            throw new Error(`ShipCheck gate failed: score=${score}/100 (min ${minScore}), critical=${criticalCount}. Report: ${reportUrl}`);
+          }
+        }
+
+        main().catch((err) => {
+          console.error(err.message || err);
+          process.exit(1);
+        });
+        EOF

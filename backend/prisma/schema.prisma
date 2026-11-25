@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ScanStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum TriggerType {
+  MANUAL
+  WEBHOOK
+}
+
+enum ScanMode {
+  PLAYWRIGHT
+  HTTP_CHEERIO
+}
+
+enum IssueCategory {
+  CONSOLE
+  NETWORK
+  MOBILE
+  BROKEN_ASSET
+  SEO
+  SECURITY
+}
+
+enum IssueSeverity {
+  CRITICAL
+  WARNING
+  INFO
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  ownerId      String
+  name         String
+  targetUrl    String
+  webhookToken String    @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  scanRuns     ScanRun[]
+
+  @@index([ownerId])
+}
+
+model ScanRun {
+  id           String      @id @default(cuid())
+  shareSlug    String      @unique
+  ownerId      String?
+  targetUrl    String
+  status       ScanStatus  @default(QUEUED)
+  triggerType  TriggerType @default(MANUAL)
+  scanMode     ScanMode    @default(PLAYWRIGHT)
+  score        Int?
+  grade        String?
+  summary      Json?
+  pagesScanned Int         @default(0)
+  durationMs   Int?
+  errorMessage String?
+  projectId    String?
+  project      Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  issues       ScanIssue[]
+  createdAt    DateTime    @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  @@index([createdAt])
+  @@index([projectId])
+  @@index([ownerId])
+}
+
+model ScanIssue {
+  id          String        @id @default(cuid())
+  scanRunId   String
+  scanRun     ScanRun       @relation(fields: [scanRunId], references: [id], onDelete: Cascade)
+  category    IssueCategory
+  severity    IssueSeverity
+  title       String
+  description String
+  remediation String
+  pageUrl     String
+  evidence    Json
+  createdAt   DateTime      @default(now())
+
+  @@index([scanRunId])
+  @@index([category])
+  @@index([severity])
+}

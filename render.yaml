@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: shipcheck-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Provide your Neon free-tier PostgreSQL connection string in the Render dashboard
+      # (Avoids Render's 30-day expiring free Postgres instances)
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOW_LOCAL_SCANS
+        value: "false"
+      - key: ENABLE_DEMO_FIXTURE
+        value: "false"
+      - key: MAX_CONCURRENT_SCANS
+        value: "1"
+      - key: MAX_PAGES_PER_SCAN
+        value: "4"
+      - key: CORS_ORIGIN
+        sync: false

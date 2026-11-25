@@ -1,0 +1,6 @@
+{
+  "name": "ShipCheck",
+  "description": "Pre-Launch & Deploy QA Scanner that catches console crashes, failing APIs, broken assets, mobile layout overflow, and security gaps before release.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

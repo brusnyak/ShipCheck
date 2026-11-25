@@ -1,0 +1,401 @@
+{
+  "projects": [],
+  "scanRuns": [
+    {
+      "id": "scan_206e670fea58e661",
+      "shareSlug": "b6447025e6",
+      "ownerId": null,
+      "targetUrl": "https://ais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app/api/demo/broken-target",
+      "status": "COMPLETED",
+      "triggerType": "MANUAL",
+      "scanMode": "HTTP_CHEERIO",
+      "score": 82,
+      "grade": "B",
+      "summary": {
+        "criticalCount": 0,
+        "warningCount": 2,
+        "infoCount": 2,
+        "passedChecks": [
+          "No unguarded inline script exceptions detected",
+          "All probed routes and endpoints returned 2xx/3xx",
+          "All inspected image assets resolved cleanly",
+          "Viewport meta tag and responsive layout rules verified"
+        ]
+      },
+      "pagesScanned": 1,
+      "durationMs": 184,
+      "errorMessage": null,
+      "projectId": null,
+      "createdAt": "2026-11-25T12:06:03.806Z",
+      "startedAt": "2026-11-25T12:06:03.807Z",
+      "completedAt": "2026-11-25T12:06:03.994Z"
+    },
+    {
+      "id": "scan_a12752e75844a817",
+      "shareSlug": "0d71ff6002",
+      "ownerId": null,
+      "targetUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "status": "COMPLETED",
+      "triggerType": "MANUAL",
+      "scanMode": "HTTP_CHEERIO",
+      "score": 3,
+      "grade": "F",
+      "summary": {
+        "criticalCount": 4,
+        "warningCount": 3,
+        "infoCount": 2,
+        "passedChecks": []
+      },
+      "pagesScanned": 1,
+      "durationMs": 71,
+      "errorMessage": null,
+      "projectId": null,
+      "createdAt": "2026-11-25T12:13:57.408Z",
+      "startedAt": "2026-11-25T12:13:57.409Z",
+      "completedAt": "2026-11-25T12:13:57.482Z"
+    },
+    {
+      "id": "scan_7e26db1e43000819",
+      "shareSlug": "e9f42da35d",
+      "ownerId": null,
+      "targetUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "status": "COMPLETED",
+      "triggerType": "MANUAL",
+      "scanMode": "HTTP_CHEERIO",
+      "score": 3,
+      "grade": "F",
+      "summary": {
+        "criticalCount": 4,
+        "warningCount": 3,
+        "infoCount": 2,
+        "passedChecks": []
+      },
+      "pagesScanned": 1,
+      "durationMs": 110,
+      "errorMessage": null,
+      "projectId": null,
+      "createdAt": "2026-11-25T12:15:47.824Z",
+      "startedAt": "2026-11-25T12:15:47.825Z",
+      "completedAt": "2026-11-25T12:15:47.937Z"
+    }
+  ],
+  "scanIssues": [
+    {
+      "category": "SECURITY",
+      "severity": "WARNING",
+      "title": "Missing X-Content-Type-Options header",
+      "description": "Response lacks \"X-Content-Type-Options: nosniff\" MIME-sniffing protection.",
+      "remediation": "Add \"X-Content-Type-Options: nosniff\" to HTTP responses.",
+      "pageUrl": "https://ais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app/__cookie_check.html?return_url=https%3A%2F%2Fais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app%2Fapi%2Fdemo%2Fbroken-target",
+      "evidence": {
+        "missingHeader": "x-content-type-options"
+      },
+      "id": "iss_b17de95046bcb8bb",
+      "scanRunId": "scan_206e670fea58e661",
+      "createdAt": "2026-11-25T12:06:03.994Z"
+    },
+    {
+      "category": "SECURITY",
+      "severity": "INFO",
+      "title": "No Content-Security-Policy header detected",
+      "description": "Adding a Content-Security-Policy header strengthens protection against XSS.",
+      "remediation": "Configure a baseline Content-Security-Policy header.",
+      "pageUrl": "https://ais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app/__cookie_check.html?return_url=https%3A%2F%2Fais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app%2Fapi%2Fdemo%2Fbroken-target",
+      "evidence": {
+        "missingHeader": "content-security-policy"
+      },
+      "id": "iss_00bc8f5a6f46d1cf",
+      "scanRunId": "scan_206e670fea58e661",
+      "createdAt": "2026-11-25T12:06:03.994Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "WARNING",
+      "title": "Missing meta description",
+      "description": "No <meta name=\"description\"> tag found in document head.",
+      "remediation": "Add a concise <meta name=\"description\"> tag for search previews.",
+      "pageUrl": "https://ais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app/__cookie_check.html?return_url=https%3A%2F%2Fais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app%2Fapi%2Fdemo%2Fbroken-target",
+      "evidence": {
+        "tag": "meta[name=\"description\"]"
+      },
+      "id": "iss_104b0528ac7180da",
+      "scanRunId": "scan_206e670fea58e661",
+      "createdAt": "2026-11-25T12:06:03.994Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "INFO",
+      "title": "Incomplete OpenGraph social preview tags",
+      "description": "Missing og:title or og:image limits rich card previews when links are shared.",
+      "remediation": "Add <meta property=\"og:title\"> and <meta property=\"og:image\"> tags.",
+      "pageUrl": "https://ais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app/__cookie_check.html?return_url=https%3A%2F%2Fais-dev-whaa4am4p3eo3ppdavca3d-592074091447.europe-west3.run.app%2Fapi%2Fdemo%2Fbroken-target",
+      "evidence": {
+        "ogTitle": false,
+        "ogImage": false
+      },
+      "id": "iss_02af63e56529db48",
+      "scanRunId": "scan_206e670fea58e661",
+      "createdAt": "2026-11-25T12:06:03.994Z"
+    },
+    {
+      "category": "SECURITY",
+      "severity": "WARNING",
+      "title": "Missing X-Content-Type-Options header",
+      "description": "Response lacks \"X-Content-Type-Options: nosniff\" MIME-sniffing protection.",
+      "remediation": "Add \"X-Content-Type-Options: nosniff\" to HTTP responses.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingHeader": "x-content-type-options"
+      },
+      "id": "iss_3ee02484a3947e93",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "SECURITY",
+      "severity": "INFO",
+      "title": "No Content-Security-Policy header detected",
+      "description": "Adding a Content-Security-Policy header strengthens protection against XSS.",
+      "remediation": "Configure a baseline Content-Security-Policy header.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingHeader": "content-security-policy"
+      },
+      "id": "iss_7e5406c152ad04af",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "WARNING",
+      "title": "Missing meta description",
+      "description": "No <meta name=\"description\"> tag found in document head.",
+      "remediation": "Add a concise <meta name=\"description\"> tag for search previews.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "tag": "meta[name=\"description\"]"
+      },
+      "id": "iss_e668b0373b04da72",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "INFO",
+      "title": "Incomplete OpenGraph social preview tags",
+      "description": "Missing og:title or og:image limits rich card previews when links are shared.",
+      "remediation": "Add <meta property=\"og:title\"> and <meta property=\"og:image\"> tags.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "ogTitle": false,
+        "ogImage": false
+      },
+      "id": "iss_1254a33f6ae16919",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "MOBILE",
+      "severity": "WARNING",
+      "title": "Missing mobile viewport meta tag",
+      "description": "No <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> detected.",
+      "remediation": "Include the responsive viewport meta tag in <head>.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingTag": "meta[name=\"viewport\"]"
+      },
+      "id": "iss_0127f36f2ec944a7",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "MOBILE",
+      "severity": "CRITICAL",
+      "title": "Fixed-width container (1280px) risks mobile overflow",
+      "description": "Detected fixed CSS width \"width: 1280px\" which exceeds a 390px mobile viewport.",
+      "remediation": "Use responsive max-width: 100% or media queries instead of wide fixed pixel widths.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "cssRule": "width: 1280px",
+        "viewportWidth": 390
+      },
+      "id": "iss_70bb81eb5ca896d7",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "CONSOLE",
+      "severity": "CRITICAL",
+      "title": "Uncaught runtime throw detected in inline script",
+      "description": "Inline page script contains an unguarded throw statement that can crash client execution.",
+      "remediation": "Guard runtime initialization with defensive checks and error boundaries.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "source": "inline-script-static-check"
+      },
+      "id": "iss_08fa26e7840ac949",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "NETWORK",
+      "severity": "CRITICAL",
+      "title": "API endpoint returned HTTP 500",
+      "description": "Client fetch call to http://127.0.0.1:3000/api/demo/failing-endpoint returned HTTP 500.",
+      "remediation": "Fix the failing backend endpoint or handle error states gracefully in the UI.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "status": 500,
+        "url": "http://127.0.0.1:3000/api/demo/failing-endpoint"
+      },
+      "id": "iss_b2e9a87ca2d0cb62",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "BROKEN_ASSET",
+      "severity": "CRITICAL",
+      "title": "Broken image asset (HTTP 404)",
+      "description": "Image asset http://127.0.0.1:3000/api/demo/missing-hero.png returned HTTP 404.",
+      "remediation": "Ensure the referenced image exists at the target path and returns HTTP 200.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "status": 404,
+        "src": "http://127.0.0.1:3000/api/demo/missing-hero.png"
+      },
+      "id": "iss_b5f6d5f59bc60c03",
+      "scanRunId": "scan_a12752e75844a817",
+      "createdAt": "2026-11-25T12:13:57.481Z"
+    },
+    {
+      "category": "SECURITY",
+      "severity": "WARNING",
+      "title": "Missing X-Content-Type-Options header",
+      "description": "Response lacks \"X-Content-Type-Options: nosniff\" MIME-sniffing protection.",
+      "remediation": "Add \"X-Content-Type-Options: nosniff\" to HTTP responses.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingHeader": "x-content-type-options"
+      },
+      "id": "iss_962c8af090b8f0ff",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "SECURITY",
+      "severity": "INFO",
+      "title": "No Content-Security-Policy header detected",
+      "description": "Adding a Content-Security-Policy header strengthens protection against XSS.",
+      "remediation": "Configure a baseline Content-Security-Policy header.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingHeader": "content-security-policy"
+      },
+      "id": "iss_c9c7eada1507e614",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "WARNING",
+      "title": "Missing meta description",
+      "description": "No <meta name=\"description\"> tag found in document head.",
+      "remediation": "Add a concise <meta name=\"description\"> tag for search previews.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "tag": "meta[name=\"description\"]"
+      },
+      "id": "iss_983cf60e23e4dc30",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "SEO",
+      "severity": "INFO",
+      "title": "Incomplete OpenGraph social preview tags",
+      "description": "Missing og:title or og:image limits rich card previews when links are shared.",
+      "remediation": "Add <meta property=\"og:title\"> and <meta property=\"og:image\"> tags.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "ogTitle": false,
+        "ogImage": false
+      },
+      "id": "iss_273a162f1babfc65",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "MOBILE",
+      "severity": "WARNING",
+      "title": "Missing mobile viewport meta tag",
+      "description": "No <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> detected.",
+      "remediation": "Include the responsive viewport meta tag in <head>.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "missingTag": "meta[name=\"viewport\"]"
+      },
+      "id": "iss_57e1059c3aa03155",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "MOBILE",
+      "severity": "CRITICAL",
+      "title": "Fixed-width container (1280px) risks mobile overflow",
+      "description": "Detected fixed CSS width \"width: 1280px\" which exceeds a 390px mobile viewport.",
+      "remediation": "Use responsive max-width: 100% or media queries instead of wide fixed pixel widths.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "cssRule": "width: 1280px",
+        "viewportWidth": 390
+      },
+      "id": "iss_179cdd6f1b906f88",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "CONSOLE",
+      "severity": "CRITICAL",
+      "title": "Uncaught runtime throw detected in inline script",
+      "description": "Inline page script contains an unguarded throw statement that can crash client execution.",
+      "remediation": "Guard runtime initialization with defensive checks and error boundaries.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "source": "inline-script-static-check"
+      },
+      "id": "iss_db4e7f61d8a4e503",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "NETWORK",
+      "severity": "CRITICAL",
+      "title": "API endpoint returned HTTP 500",
+      "description": "Client fetch call to http://127.0.0.1:3000/api/demo/failing-endpoint returned HTTP 500.",
+      "remediation": "Fix the failing backend endpoint or handle error states gracefully in the UI.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "status": 500,
+        "url": "http://127.0.0.1:3000/api/demo/failing-endpoint"
+      },
+      "id": "iss_27905c064ce2d926",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    },
+    {
+      "category": "BROKEN_ASSET",
+      "severity": "CRITICAL",
+      "title": "Broken image asset (HTTP 404)",
+      "description": "Image asset http://127.0.0.1:3000/api/demo/missing-hero.png returned HTTP 404.",
+      "remediation": "Ensure the referenced image exists at the target path and returns HTTP 200.",
+      "pageUrl": "http://127.0.0.1:3000/api/demo/broken-target",
+      "evidence": {
+        "status": 404,
+        "src": "http://127.0.0.1:3000/api/demo/missing-hero.png"
+      },
+      "id": "iss_46250ee241bb35e7",
+      "scanRunId": "scan_7e26db1e43000819",
+      "createdAt": "2026-11-25T12:15:47.936Z"
+    }
+  ]
+}
